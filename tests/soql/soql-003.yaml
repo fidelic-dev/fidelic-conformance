@@ -1,0 +1,38 @@
+id: soql-003
+name: "SOQL LIMIT caps the number of rows returned"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_limit.htm"
+# Three records share a Name; LIMIT 2 must bound the result to 2 (totalSize
+# reflects the LIMIT-bounded count for a non-aggregate query).
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "SoqlLimit {{rand}}" }
+    save: { id1: "$.id" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "SoqlLimit {{rand}}" }
+    save: { id2: "$.id" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "SoqlLimit {{rand}}" }
+    save: { id3: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id FROM Account WHERE Name = 'SoqlLimit {{rand}}' LIMIT 2"
+expect:
+  status: 200
+  body:
+    totalSize: 2
+    done: true
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id1}}"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id2}}"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id3}}"

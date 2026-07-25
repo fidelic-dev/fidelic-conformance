@@ -1,0 +1,18 @@
+id: errors-010
+name: "Create Account with Name exceeding 255 chars returns 400 STRING_TOO_LONG"
+# Verified against a real Dev Edition org (2026-07-17): a Name over 255 chars
+# returns 400 STRING_TOO_LONG. (We assert only errorCode; whether `fields` is
+# populated here was not asserted.)
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/Account"
+  headers:
+    Content-Type: "application/json"
+  body:
+    # Account.Name max length is 255; this is 260 'A's.
+    Name: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+expect:
+  status: 400
+  body:
+    - errorCode: "STRING_TOO_LONG"

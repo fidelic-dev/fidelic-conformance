@@ -1,0 +1,40 @@
+id: hooks-007
+name: "after_update hook creates a child record"
+targets: [emulator]
+citation: "emulator declarative-hook feature — after_update timing (additive to v1.0)"
+setup:
+  - method: POST
+    path: "/__emulator__/hooks"
+    headers: { Content-Type: "application/json" }
+    body:
+      object: "Account"
+      timing: "after_update"
+      action:
+        type: "create_child"
+        childObject: "Contact"
+        parentField: "AccountId"
+        childFields: { LastName: "Updated Child {{rand}}" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "After Update Parent {{rand}}" }
+    save: { accountId: "$.id" }
+  - method: PATCH
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+    headers: { Content-Type: "application/json" }
+    body: { Phone: "555-0100" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, LastName, AccountId FROM Contact WHERE LastName = 'Updated Child {{rand}}'"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    records:
+      - LastName: "Updated Child {{rand}}"
+        AccountId: "{{saved:accountId}}"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

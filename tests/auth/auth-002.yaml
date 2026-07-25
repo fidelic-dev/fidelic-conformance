@@ -1,0 +1,19 @@
+id: auth-002
+name: "OAuth token request with bad client secret returns 400 invalid_client"
+citation: "https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_flow_errors.htm&type=5"
+# Verified against a real Dev Edition org (2026-07-17): a wrong secret returns
+# the same envelope as a missing one (cf. auth-005).
+request:
+  method: POST
+  path: "/services/oauth2/token"
+  headers:
+    Content-Type: "application/x-www-form-urlencoded"
+  body:
+    grant_type: "client_credentials"
+    client_id: "{{target:client_id}}"
+    client_secret: "definitely-not-the-secret-{{rand}}"
+expect:
+  status: 400
+  body:
+    error: "invalid_client"
+    error_description: "invalid client credentials"

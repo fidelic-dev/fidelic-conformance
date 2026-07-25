@@ -1,0 +1,12 @@
+id: errors-004
+name: "Delete a non-existent Account id returns 404 INVALID_CROSS_REFERENCE_KEY"
+# FINDING (verified 2026-07-17): unlike GET (errors-003 → NOT_FOUND), a DELETE of
+# a well-formed but non-existent id returns INVALID_CROSS_REFERENCE_KEY.
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: DELETE
+  path: "/services/data/v62.0/sobjects/Account/001000000000001"
+expect:
+  status: 404
+  body:
+    - errorCode: "INVALID_CROSS_REFERENCE_KEY"

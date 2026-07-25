@@ -1,0 +1,16 @@
+id: auth-004
+name: "Data request with an invalid bearer token returns 401 INVALID_SESSION_ID"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account"
+  headers:
+    # Explicit bad token. The runner suppresses its own bearer injection when a
+    # test sets Authorization itself, so this reaches the org unauthenticated.
+    Authorization: "Bearer 00Dxx0000000000!invalidtokeninvalidtokeninvalid"
+expect:
+  status: 401
+  # SF returns a top-level array of error objects; contains semantics ignore the
+  # accompanying human-readable `message`.
+  body:
+    - errorCode: "INVALID_SESSION_ID"

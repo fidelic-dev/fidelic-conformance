@@ -1,0 +1,14 @@
+id: crud-011
+name: "Describe Global (list sObjects) returns 200 with Account in sobjects"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_describeGlobal.htm"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects"
+expect:
+  status: 200
+  body:
+    encoding: "{{match:string}}"
+    # sobjects is the global list; contains semantics assert Account is present.
+    sobjects:
+      - name: "Account"
+        keyPrefix: "001"

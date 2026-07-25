@@ -1,0 +1,25 @@
+id: crud-005
+name: "Retrieve Account with fields query parameter returns 200 with requested field"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_get_field_values.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "Fields Conformance {{rand}}"
+    save:
+      accountId: "$.id"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}?fields=Name"
+expect:
+  status: 200
+  body:
+    Name: "Fields Conformance {{rand}}"
+    attributes:
+      type: "Account"
+      url: "{{match:string}}"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

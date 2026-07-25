@@ -1,0 +1,24 @@
+id: crud-015
+name: "Update Contact via PATCH returns 204 (second-object update lifecycle)"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_update_fields.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Contact"
+    headers:
+      Content-Type: "application/json"
+    body:
+      LastName: "Contact Update {{rand}}"
+    save:
+      contactId: "$.id"
+request:
+  method: PATCH
+  path: "/services/data/v62.0/sobjects/Contact/{{saved:contactId}}"
+  headers:
+    Content-Type: "application/json"
+  body:
+    Title: "Conformance Manager"
+expect:
+  status: 204
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Contact/{{saved:contactId}}"

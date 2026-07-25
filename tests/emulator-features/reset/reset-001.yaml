@@ -1,0 +1,19 @@
+id: reset-001
+name: "Reset clears all data — a created record is gone afterward"
+targets: [emulator]
+citation: "emulator control feature — no Salesforce REST analogue"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Reset Target {{rand}}" }
+    save: { accountId: "$.id" }
+  - method: POST
+    path: "/__emulator__/reset"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+expect:
+  status: 404
+  body:
+    - errorCode: "NOT_FOUND"

@@ -1,0 +1,14 @@
+id: soql-002
+name: "SOQL SELECT with no matching rows returns totalSize 0 and empty records"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_query.htm"
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Name FROM Account WHERE Name = 'NoSuchAccount-{{rand}}'"
+expect:
+  status: 200
+  body:
+    totalSize: 0
+    done: true
+    records: []

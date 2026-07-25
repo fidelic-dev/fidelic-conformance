@@ -1,0 +1,18 @@
+id: auth-001
+name: "OAuth client_credentials token request returns 200 with access_token"
+citation: "https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_client_credentials_flow.htm&type=5"
+request:
+  method: POST
+  path: "/services/oauth2/token"
+  headers:
+    Content-Type: "application/x-www-form-urlencoded"
+  body:
+    grant_type: "client_credentials"
+    client_id: "{{target:client_id}}"
+    client_secret: "{{target:client_secret}}"
+expect:
+  status: 200
+  body:
+    access_token: "{{match:string}}"
+    instance_url: "{{match:string}}"
+    token_type: "Bearer"

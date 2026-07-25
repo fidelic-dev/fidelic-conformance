@@ -1,0 +1,11 @@
+id: license-001
+name: "License status endpoint reports valid for the dev/stub key"
+targets: [emulator]
+citation: "emulator licensing-stub feature — no Salesforce REST analogue"
+request:
+  method: GET
+  path: "/__emulator__/license"
+expect:
+  status: 200
+  body:
+    valid: true

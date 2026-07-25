@@ -1,0 +1,26 @@
+id: crud-013
+name: "Create Account with multiple fields, retrieve echoes all of them"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_sobject_create.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "Multi Field {{rand}}"
+      Phone: "415-555-0100"
+      Website: "https://conformance.example.com"
+    save:
+      accountId: "$.id"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+expect:
+  status: 200
+  body:
+    Name: "Multi Field {{rand}}"
+    Phone: "415-555-0100"
+    Website: "https://conformance.example.com"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

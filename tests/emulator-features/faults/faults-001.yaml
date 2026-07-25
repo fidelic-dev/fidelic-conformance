@@ -1,0 +1,27 @@
+id: faults-001
+name: "Injected UNABLE_TO_LOCK_ROW fires on the next update"
+targets: [emulator]
+# The injected envelope must match the documented SF DML error shape.
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Lock Target {{rand}}" }
+    save: { accountId: "$.id" }
+  - method: POST
+    path: "/__emulator__/faults"
+    headers: { Content-Type: "application/json" }
+    body: { errorCode: "UNABLE_TO_LOCK_ROW", trigger: "update" }
+request:
+  method: PATCH
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+  headers: { Content-Type: "application/json" }
+  body: { Name: "Lock Target {{rand}} (edit)" }
+expect:
+  status: 400
+  body:
+    - errorCode: "UNABLE_TO_LOCK_ROW"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

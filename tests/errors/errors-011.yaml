@@ -1,0 +1,14 @@
+id: errors-011
+name: "Retrieve with a too-short id is parsed as an external-id field → 404 NOT_FOUND"
+# FINDING (verified 2026-07-17): there is no distinct malformed-id error for this
+# path shape. SF interprets the unqualified segment `123` as an external-ID field
+# name and returns NOT_FOUND: "Provided external ID field does not exist or is
+# not accessible: 123".
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/123"
+expect:
+  status: 404
+  body:
+    - errorCode: "NOT_FOUND"

@@ -1,0 +1,14 @@
+id: errors-013
+name: "Unsupported HTTP method on the sObject rows resource returns 405"
+# Verified against a real Dev Edition org (2026-07-17): a PUT to the sObject rows
+# resource returns 405 Method Not Allowed.
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_list.htm"
+request:
+  method: PUT
+  path: "/services/data/v62.0/sobjects/Account"
+  headers:
+    Content-Type: "application/json"
+  body:
+    Name: "Wrong Method {{rand}}"
+expect:
+  status: 405

@@ -1,0 +1,34 @@
+# Copy to targets.yaml and fill in real-org credentials before running
+# `--target=real`. targets.yaml is git-ignored; this template is not.
+#
+# Tokens available inside test YAML (resolved at runtime, so secrets never live
+# in the test files themselves):
+#   {{target:client_id}}     -> auth.client_id below (default "conformance")
+#   {{target:client_secret}} -> auth.client_secret below (default "conformance")
+#   {{env:NAME}}             -> os environment variable
+#   {{rand}}                 -> unique per-test suffix
+#   {{saved:key}}            -> value captured by a prior setup step's `save`
+
+targets:
+  emulator:
+    base_url: "http://localhost:8080"
+    auth:
+      type: none
+
+  real:
+    # Your Developer Edition My Domain login URL.
+    base_url: "https://MyDomain.my.salesforce.com"
+    auth:
+      type: client_credentials
+      # Optional; defaults to base_url + /services/oauth2/token
+      token_url: "https://MyDomain.my.salesforce.com/services/oauth2/token"
+      client_id: "REPLACE_WITH_CONNECTED_APP_CONSUMER_KEY"
+      client_secret: "REPLACE_WITH_CONNECTED_APP_CONSUMER_SECRET"
+
+  # The emulator loaded with hooks GENERATED from the apex-conformance fixture
+  # triggers (sfapex generate ... > tests/apex-conformance/generated-hooks.json).
+  # Start sfemu with --hooks-file that file; used by the apex-conformance suite.
+  emulator-apex:
+    base_url: "http://localhost:8080"
+    auth:
+      type: none

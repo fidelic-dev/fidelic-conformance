@@ -1,0 +1,25 @@
+id: validation-002
+name: "Custom validation rule allows non-negative AnnualRevenue on create"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+# Companion to validation-001: confirms the rule does NOT over-fire on valid data.
+requires:
+  - "Account validation rule 'Annual_Revenue_Not_Negative' (org prerequisite)"
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/Account"
+  headers:
+    Content-Type: "application/json"
+  body:
+    Name: "Validation OK {{rand}}"
+    AnnualRevenue: 0
+  save:
+    accountId: "$.id"
+expect:
+  status: 201
+  body:
+    id: "{{match:sfid}}"
+    success: true
+    errors: []
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

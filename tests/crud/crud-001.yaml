@@ -1,0 +1,22 @@
+id: crud-001
+name: "Create Account with Name returns 201 with id/success/errors"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_sobject_create.htm"
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/Account"
+  headers:
+    Content-Type: "application/json"
+  body:
+    Name: "Acme Conformance {{rand}}"
+  # Capture the new id so teardown can delete it on real-org runs.
+  save:
+    createdId: "$.id"
+expect:
+  status: 201
+  body:
+    id: "{{match:sfid}}"
+    success: true
+    errors: []
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:createdId}}"

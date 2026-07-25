@@ -1,0 +1,11 @@
+id: reset-002
+name: "Reset endpoint returns 200 with success"
+targets: [emulator]
+citation: "emulator control feature — no Salesforce REST analogue"
+request:
+  method: POST
+  path: "/__emulator__/reset"
+expect:
+  status: 200
+  body:
+    success: true

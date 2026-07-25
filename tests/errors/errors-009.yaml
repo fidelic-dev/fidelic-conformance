@@ -1,0 +1,17 @@
+id: errors-009
+name: "Create Account with an unknown field returns 400 INVALID_FIELD"
+# Verified against a real Dev Edition org (2026-07-17): create with an undefined
+# field returns 400 INVALID_FIELD.
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/Account"
+  headers:
+    Content-Type: "application/json"
+  body:
+    Name: "Unknown Field {{rand}}"
+    NotAField__c: "nope"
+expect:
+  status: 400
+  body:
+    - errorCode: "INVALID_FIELD"

@@ -1,0 +1,12 @@
+id: errors-012
+name: "Request to an unsupported API version returns 404 NOT_FOUND"
+# Verified against a real Dev Edition org (2026-07-17): an unsupported API
+# version path returns 404 with a NOT_FOUND error array.
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: GET
+  path: "/services/data/v1.0/sobjects/Account/describe"
+expect:
+  status: 404
+  body:
+    - errorCode: "NOT_FOUND"

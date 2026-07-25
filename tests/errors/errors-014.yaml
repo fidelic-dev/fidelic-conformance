@@ -1,0 +1,35 @@
+id: errors-014
+name: "PATCH a non-numeric value into a currency field returns 400 JSON_PARSER_ERROR"
+# Ground truth captured against a real Dev Edition org (2026-07-18):
+#   PATCH Account {"AnnualRevenue":"banana"} ->
+#   [{"errorCode":"JSON_PARSER_ERROR","message":"Cannot deserialize instance of
+#     currency from VALUE_STRING value banana or request may be missing a
+#     required field at [line:1, column:2]"}]
+# The type name ("currency" — AnnualRevenue is a Currency field) and VALUE_STRING
+# are structural; the [line:N, column:N] varies with the payload, so it is matched
+# by regex. (the message format is undocumented).
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "Bad Number {{rand}}"
+    save:
+      accountId: "$.id"
+request:
+  method: PATCH
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+  headers:
+    Content-Type: "application/json"
+  body:
+    AnnualRevenue: "banana"
+expect:
+  status: 400
+  body:
+    - errorCode: "JSON_PARSER_ERROR"
+      message: '{{match:regex:^Cannot deserialize instance of currency from VALUE_STRING value banana or request may be missing a required field at \[line:\d+, column:\d+\]$}}'
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

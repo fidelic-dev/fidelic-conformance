@@ -1,0 +1,19 @@
+id: validation-001
+name: "Custom validation rule rejects negative AnnualRevenue on create"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+# Error message verified against the real org (2026-07-17): no trailing period.
+requires:
+  - "Account validation rule 'Annual_Revenue_Not_Negative' (org prerequisite)"
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/Account"
+  headers:
+    Content-Type: "application/json"
+  body:
+    Name: "Validation Neg {{rand}}"
+    AnnualRevenue: -1
+expect:
+  status: 400
+  body:
+    - errorCode: "FIELD_CUSTOM_VALIDATION_EXCEPTION"
+      message: "Annual Revenue cannot be negative"

@@ -1,0 +1,28 @@
+id: hooks-001
+name: "before_insert hook sets a field before save"
+targets: [emulator]
+citation: "emulator declarative-hook feature — no Salesforce REST analogue"
+setup:
+  - method: POST
+    path: "/__emulator__/hooks"
+    headers: { Content-Type: "application/json" }
+    body:
+      object: "Account"
+      timing: "before_insert"
+      condition: "ISBLANK(Site)"
+      action: { type: "set_field", field: "Site", value: "hooked" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Hook SetField {{rand}}" }
+    save: { accountId: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+expect:
+  status: 200
+  body:
+    Site: "hooked"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

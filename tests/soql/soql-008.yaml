@@ -1,0 +1,28 @@
+id: soql-008
+name: "SOQL WHERE with OR returns both matching records"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_conditionexpression.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "OrA-{{rand}}", Site: "SoqlOr-{{rand}}" }
+    save: { id1: "$.id" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "OrB-{{rand}}", Site: "SoqlOr-{{rand}}" }
+    save: { id2: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Name FROM Account WHERE Name = 'OrA-{{rand}}' OR Name = 'OrB-{{rand}}'"
+expect:
+  status: 200
+  body:
+    totalSize: 2
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id1}}"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id2}}"

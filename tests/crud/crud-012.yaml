@@ -1,0 +1,26 @@
+id: crud-012
+name: "Retrieved Account carries system fields CreatedDate and attributes.url"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_sobject_retrieve.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "System Fields {{rand}}"
+    save:
+      accountId: "$.id"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+expect:
+  status: 200
+  body:
+    Id: "{{match:sfid}}"
+    CreatedDate: "{{match:iso8601}}"
+    attributes:
+      type: "Account"
+      url: "{{match:string}}"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

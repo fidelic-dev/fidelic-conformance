@@ -1,0 +1,33 @@
+id: hooks-004
+name: "Order of Execution — before_insert hook runs before validation rules"
+targets: [emulator]
+# The before-insert hook rewrites AnnualRevenue to a valid value; the loaded
+# AnnualRevenue<0 validation rule would reject the raw -5. The record saving
+# (and reading back 100) proves before-hooks run BEFORE validation, per the
+# documented Order of Execution. CROSS-REF: to be verified against a real org
+# later against real Apex behavior.
+citation: "https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_triggers_order_of_execution.htm"
+setup:
+  - method: POST
+    path: "/__emulator__/hooks"
+    headers: { Content-Type: "application/json" }
+    body:
+      object: "Account"
+      timing: "before_insert"
+      condition: "AnnualRevenue < 0"
+      action: { type: "set_field", field: "AnnualRevenue", value: 100 }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Order Of Exec {{rand}}", AnnualRevenue: -5 }
+    save: { accountId: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+expect:
+  status: 200
+  body:
+    AnnualRevenue: 100
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

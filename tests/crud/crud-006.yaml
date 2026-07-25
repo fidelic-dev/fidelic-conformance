@@ -1,0 +1,23 @@
+id: crud-006
+name: "Create Contact with LastName returns 201 with id/success/errors"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_sobject_create.htm"
+# Exercises a second standard object with a different key prefix (Contact IDs
+# begin "003", vs "001" for Account) to prove object-generic CRUD + ID shaping.
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/Contact"
+  headers:
+    Content-Type: "application/json"
+  body:
+    LastName: "Contact Conformance {{rand}}"
+  save:
+    contactId: "$.id"
+expect:
+  status: 201
+  body:
+    id: "{{match:sfid}}"
+    success: true
+    errors: []
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Contact/{{saved:contactId}}"

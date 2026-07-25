@@ -1,0 +1,12 @@
+id: soql-009
+name: "SOQL SELECT of an unknown field returns 400 INVALID_FIELD"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT NotAField__c FROM Account"
+expect:
+  status: 400
+  body:
+    - errorCode: "INVALID_FIELD"

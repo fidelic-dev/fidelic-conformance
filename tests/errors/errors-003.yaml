@@ -1,0 +1,12 @@
+id: errors-003
+name: "Retrieve a well-formed but non-existent Account id returns 404 NOT_FOUND"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+# 15-char id is format-valid (no checksum to satisfy) and vanishingly unlikely
+# to exist — distinguishes "not found" from the "malformed id" case (errors-011).
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/001000000000001"
+expect:
+  status: 404
+  body:
+    - errorCode: "NOT_FOUND"

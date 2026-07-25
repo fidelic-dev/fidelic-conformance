@@ -1,0 +1,16 @@
+id: crud-009
+name: "Describe Account sObject returns 200 with name, keyPrefix, and fields"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_sobject_describe.htm"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/describe"
+expect:
+  status: 200
+  body:
+    name: "Account"
+    keyPrefix: "001"
+    label: "{{match:string}}"
+    # fields is a large array; contains semantics assert the standard Name field
+    # is described, ignoring the hundreds of other fields.
+    fields:
+      - name: "Name"

@@ -1,0 +1,41 @@
+id: soql-012
+name: "SOQL WHERE Name NOT IN (literal list) returns the complement"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_comparisonoperators.htm"
+# NEXT-VERSION addition (beyond the frozen 52). Docs-derived: the SOQL
+# comparison-operators reference lists NOT IN ("does not match any value in a
+# list"). Verified against the emulator; pending real-org verification. Confidence HIGH — NOT IN is explicitly documented.
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "AAA-{{rand}}", Site: "SoqlNotIn-{{rand}}" }
+    save: { id1: "$.id" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "BBB-{{rand}}", Site: "SoqlNotIn-{{rand}}" }
+    save: { id2: "$.id" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "CCC-{{rand}}", Site: "SoqlNotIn-{{rand}}" }
+    save: { id3: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Name FROM Account WHERE Site = 'SoqlNotIn-{{rand}}' AND Name NOT IN ('BBB-{{rand}}') ORDER BY Name ASC"
+expect:
+  status: 200
+  body:
+    totalSize: 2
+    records:
+      - Name: "AAA-{{rand}}"
+      - Name: "CCC-{{rand}}"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id1}}"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id2}}"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id3}}"

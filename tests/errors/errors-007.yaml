@@ -1,0 +1,10 @@
+id: errors-007
+name: "Describe on an unknown sObject type returns 404 NOT_FOUND"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/NotARealObject__c/describe"
+expect:
+  status: 404
+  body:
+    - errorCode: "NOT_FOUND"

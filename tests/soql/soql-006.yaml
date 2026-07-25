@@ -1,0 +1,25 @@
+id: soql-006
+name: "SOQL WHERE with a numeric comparison and AND returns the matching record"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_comparisonoperators.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body:
+      Name: "SoqlNum {{rand}}"
+      AnnualRevenue: 1000000
+    save: { accountId: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Name FROM Account WHERE Name = 'SoqlNum {{rand}}' AND AnnualRevenue > 500000"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    records:
+      - Name: "SoqlNum {{rand}}"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

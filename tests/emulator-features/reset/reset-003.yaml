@@ -1,0 +1,27 @@
+id: reset-003
+name: "Reset clears armed faults — an update succeeds after reset disarms a lock fault"
+targets: [emulator]
+citation: "emulator reset primitive — factory state per test (clears data, faults, latency, hooks)"
+setup:
+  # Arm a persistent lock fault, then reset: reset must disarm it (not just wipe data).
+  - method: POST
+    path: "/__emulator__/faults"
+    headers: { Content-Type: "application/json" }
+    body: { errorCode: "UNABLE_TO_LOCK_ROW", trigger: "update", once: false }
+  - method: POST
+    path: "/__emulator__/reset"
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Reset Fault {{rand}}" }
+    save: { accountId: "$.id" }
+request:
+  method: PATCH
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+  headers: { Content-Type: "application/json" }
+  body: { Name: "Reset Fault {{rand}} (edited)" }
+expect:
+  status: 204
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

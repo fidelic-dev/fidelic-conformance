@@ -1,0 +1,32 @@
+id: soql-015
+pending: true  # Provisional — docs-derived, pending real-org verification
+name: "SOQL SELECT Parent.Name on a NULL lookup returns the row with a null Parent (not an error, not skipped)"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_relationships.htm"
+# NEXT-VERSION addition (beyond the frozen 52 / current 68). SUB-FEATURE #1, ruler-first.
+# PROVENANCE — PROVISIONAL (docs-derived; UNVERIFIED against a real org).
+# CLASSIC EMULATOR LIE #1: a parent traversal where the lookup field (ParentId) is NULL
+# must return the record WITH `Parent: null` — it must NOT raise an error, and must NOT
+# drop the row from the result. The naive emulator either errors on the null traversal or
+# silently omits the row; real Salesforce returns the row with a null parent object.
+# real-org capture — reconcile before declaring non-provisional.
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Orphan-{{rand}}", Site: "SoqlRelNull-{{rand}}" }
+    save: { id: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Parent.Name FROM Account WHERE Id = '{{saved:id}}'"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    records:
+      - Id: "{{saved:id}}"
+        Parent: null
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id}}"

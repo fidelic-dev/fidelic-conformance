@@ -1,0 +1,23 @@
+id: validation-005
+name: "Built-in email validation accepts a well-formed Email on Contact"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+# Companion to validation-004: a valid email must be accepted (201).
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/Contact"
+  headers:
+    Content-Type: "application/json"
+  body:
+    LastName: "Validation Email OK {{rand}}"
+    Email: "conf-{{rand}}@example.com"
+  save:
+    contactId: "$.id"
+expect:
+  status: 201
+  body:
+    id: "{{match:sfid}}"
+    success: true
+    errors: []
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Contact/{{saved:contactId}}"

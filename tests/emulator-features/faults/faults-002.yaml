@@ -1,0 +1,20 @@
+id: faults-002
+name: "Injected REQUEST_LIMIT_EXCEEDED returns 403"
+targets: [emulator]
+# REQUEST_LIMIT_EXCEEDED is documented as HTTP 403 with the DML error array.
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+setup:
+  - method: POST
+    path: "/__emulator__/faults"
+    headers: { Content-Type: "application/json" }
+    body: { errorCode: "REQUEST_LIMIT_EXCEEDED", trigger: "*", afterN: 0 }
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/describe"
+expect:
+  status: 403
+  body:
+    - errorCode: "REQUEST_LIMIT_EXCEEDED"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

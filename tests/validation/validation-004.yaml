@@ -1,0 +1,18 @@
+id: validation-004
+name: "Built-in email validation rejects a malformed Email on Contact"
+# AMBIGUOUS(fields): confident on errorCode INVALID_EMAIL_ADDRESS; unsure whether
+# the `fields` array is populated with ["Email"]. Asserting errorCode only until
+# confirmed against the real org.
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/Contact"
+  headers:
+    Content-Type: "application/json"
+  body:
+    LastName: "Validation Email {{rand}}"
+    Email: "not-a-valid-email"
+expect:
+  status: 400
+  body:
+    - errorCode: "INVALID_EMAIL_ADDRESS"

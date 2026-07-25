@@ -1,0 +1,17 @@
+id: auth-003
+name: "OAuth token request with unsupported grant_type returns 400 unsupported_grant_type"
+citation: "https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_flow_errors.htm&type=5"
+request:
+  method: POST
+  path: "/services/oauth2/token"
+  headers:
+    Content-Type: "application/x-www-form-urlencoded"
+  body:
+    grant_type: "urn:example:bogus-grant"
+    client_id: "{{target:client_id}}"
+    client_secret: "{{target:client_secret}}"
+expect:
+  status: 400
+  body:
+    error: "unsupported_grant_type"
+    error_description: "{{match:string}}"

@@ -1,0 +1,30 @@
+id: crud-008
+name: "PATCH is a partial update — unspecified fields are preserved"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_update_fields.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "Partial {{rand}}"
+      Phone: "111-111-1111"
+    save:
+      accountId: "$.id"
+  - method: PATCH
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Phone: "222-222-2222"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+expect:
+  status: 200
+  body:
+    Name: "Partial {{rand}}"       # untouched by the PATCH — still present
+    Phone: "222-222-2222"          # updated
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

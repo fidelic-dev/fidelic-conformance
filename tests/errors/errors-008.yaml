@@ -1,0 +1,22 @@
+id: errors-008
+name: "Retrieve with an unknown field in ?fields= returns 400 INVALID_FIELD"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "Bad Field Query {{rand}}"
+    save:
+      accountId: "$.id"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}?fields=NotAField__c"
+expect:
+  status: 400
+  body:
+    - errorCode: "INVALID_FIELD"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

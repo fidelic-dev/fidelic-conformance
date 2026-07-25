@@ -1,0 +1,26 @@
+id: crud-002
+name: "Retrieve Account by id returns 200 with Id/Name/attributes.type"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_sobject_retrieve.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "Retrieve Conformance {{rand}}"
+    save:
+      accountId: "$.id"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+expect:
+  status: 200
+  body:
+    Id: "{{match:sfid}}"
+    Name: "Retrieve Conformance {{rand}}"
+    attributes:
+      type: "Account"
+      url: "{{match:string}}"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

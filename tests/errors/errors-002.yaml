@@ -1,0 +1,16 @@
+id: errors-002
+name: "Create Contact with empty body returns 400 REQUIRED_FIELD_MISSING for LastName"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+# Parallel to errors-001 but on Contact, whose sole required field is LastName —
+# confirms REQUIRED_FIELD_MISSING is object-generic and names the right field.
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/Contact"
+  headers:
+    Content-Type: "application/json"
+  body: {}
+expect:
+  status: 400
+  body:
+    - errorCode: "REQUIRED_FIELD_MISSING"
+      fields: ["LastName"]

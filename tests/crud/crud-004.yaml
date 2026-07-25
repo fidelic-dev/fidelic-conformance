@@ -1,0 +1,18 @@
+id: crud-004
+name: "Delete Account via DELETE returns 204 No Content"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_delete_record.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "Delete Conformance {{rand}}"
+    save:
+      accountId: "$.id"
+request:
+  method: DELETE
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+expect:
+  status: 204
+# No teardown: the record is deleted by the request under test.

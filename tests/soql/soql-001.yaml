@@ -1,0 +1,31 @@
+id: soql-001
+name: "SOQL SELECT with WHERE equality returns the matching record"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_query.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "SoqlOne {{rand}}"
+    save:
+      accountId: "$.id"
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Name FROM Account WHERE Name = 'SoqlOne {{rand}}'"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    done: true
+    records:
+      - attributes:
+          type: "Account"
+          url: "{{match:string}}"
+        Id: "{{match:sfid}}"
+        Name: "SoqlOne {{rand}}"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

@@ -1,0 +1,36 @@
+id: crud-017
+name: "Upsert by External Id updates an existing record with created:false"
+# Verified against a real Dev Edition org (2026-07-17): v62.0 returns 200 with a
+# body (created:false) for an upsert that updates. (Older versions returned 204
+# No Content — revisit if we ever assert a lower version.)
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_upsert.htm"
+requires:
+  - "Account custom field ExternalId__c (org prerequisite)"
+setup:
+  # First upsert creates the record on this external id.
+  - method: PATCH
+    path: "/services/data/v62.0/sobjects/Account/ExternalId__c/CONF-UPD-{{rand}}"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "Before Upsert {{rand}}"
+    save:
+      accountId: "$.id"
+request:
+  # Second upsert on the same external id updates the existing record.
+  method: PATCH
+  path: "/services/data/v62.0/sobjects/Account/ExternalId__c/CONF-UPD-{{rand}}"
+  headers:
+    Content-Type: "application/json"
+  body:
+    Name: "After Upsert {{rand}}"
+expect:
+  status: 200
+  body:
+    id: "{{match:sfid}}"
+    success: true
+    errors: []
+    created: false
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

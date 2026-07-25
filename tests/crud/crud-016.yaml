@@ -1,0 +1,25 @@
+id: crud-016
+name: "Upsert by External Id creates a new record and returns 201 created:true"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_upsert.htm"
+# The external-id value in the URL is set on the created record.
+requires:
+  - "Account custom field ExternalId__c (org prerequisite)"
+request:
+  method: PATCH
+  path: "/services/data/v62.0/sobjects/Account/ExternalId__c/CONF-{{rand}}"
+  headers:
+    Content-Type: "application/json"
+  body:
+    Name: "Upsert Create {{rand}}"
+  save:
+    accountId: "$.id"
+expect:
+  status: 201
+  body:
+    id: "{{match:sfid}}"
+    success: true
+    errors: []
+    created: true
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

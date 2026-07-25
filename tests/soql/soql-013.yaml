@@ -1,0 +1,34 @@
+id: soql-013
+name: "SOQL WHERE Id IN () (empty list) matches no rows"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_comparisonoperators.htm"
+# NEXT-VERSION addition (beyond the frozen 52).
+# PROVENANCE — this is the ONE assertion here flagged for future real-org
+# verification:
+#   - Well-documented (HIGH confidence): a BIND to an empty collection
+#     (`WHERE Id IN :emptyList`) matches zero rows. Rung B substitutes binds into
+#     the literal query, so an empty List bind produces `IN ()` — the emulator MUST
+#     return 0 rows for this to be faithful. That is why this behavior is required.
+#   - UNVERIFIED (docs-ambiguous): whether real Salesforce accepts the LITERAL
+#     `IN ()` in a REST query, or rejects it as MALFORMED_QUERY. If a real org later
+#     returns MALFORMED for the literal form, reconcile: keep 0-rows for the
+#     bind-substituted path, and gate the literal form separately. RECONCILE FIRST
+#     when an org is available (real-org capture).
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Lonely-{{rand}}", Site: "SoqlInEmpty-{{rand}}" }
+    save: { id1: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Name FROM Account WHERE Site = 'SoqlInEmpty-{{rand}}' AND Id IN ()"
+expect:
+  status: 200
+  body:
+    totalSize: 0
+    records: []
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id1}}"

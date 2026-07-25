@@ -1,0 +1,16 @@
+id: errors-005
+name: "PATCH a non-existent Account id returns 404 INVALID_CROSS_REFERENCE_KEY"
+# FINDING (verified 2026-07-17): like DELETE (errors-004), a PATCH to a
+# non-existent id returns INVALID_CROSS_REFERENCE_KEY, not NOT_FOUND.
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: PATCH
+  path: "/services/data/v62.0/sobjects/Account/001000000000001"
+  headers:
+    Content-Type: "application/json"
+  body:
+    Name: "Ghost {{rand}}"
+expect:
+  status: 404
+  body:
+    - errorCode: "INVALID_CROSS_REFERENCE_KEY"

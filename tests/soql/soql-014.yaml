@@ -1,0 +1,35 @@
+id: soql-014
+name: "SOQL SELECT Parent.Name traverses a parent relationship (non-null lookup)"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_relationships.htm"
+# NEXT-VERSION addition (beyond the frozen 52 / current 68). SUB-FEATURE #1
+# (relationship fields in SELECT), ruler-first — RED until sf/soql supports parent
+# traversal. Docs-derived from the SOQL relationship-queries reference; REAL-ORG
+# VERIFICATION PENDING. The non-null parent object is nested under
+# the relationship name with its own attributes block.
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Parent-{{rand}}", Site: "SoqlRel-{{rand}}" }
+    save: { pid: "$.id" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Child-{{rand}}", Site: "SoqlRel-{{rand}}", ParentId: "{{saved:pid}}" }
+    save: { cid: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Parent.Name FROM Account WHERE Id = '{{saved:cid}}'"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    records:
+      - Parent: { Name: "Parent-{{rand}}" }
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:cid}}"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:pid}}"

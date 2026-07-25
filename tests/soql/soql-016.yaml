@@ -1,0 +1,37 @@
+id: soql-016
+name: "SOQL child subquery (SELECT ..., (SELECT ... FROM Contacts)) returns nested child records"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_relationships_query_using.htm"
+# NEXT-VERSION addition (beyond the frozen 52 / current 68). SUB-FEATURE #1
+# (parent-to-child subqueries), ruler-first — RED until sf/soql shapes subquery results.
+# Docs-derived; pending real-org verification. A non-empty child relationship is nested
+# under the child relationship name as a query-result object (totalSize/done/records).
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Acct-{{rand}}", Site: "SoqlSub-{{rand}}" }
+    save: { aid: "$.id" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Contact"
+    headers: { Content-Type: "application/json" }
+    body: { LastName: "Kid-{{rand}}", AccountId: "{{saved:aid}}" }
+    save: { cid: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, (SELECT LastName FROM Contacts) FROM Account WHERE Id = '{{saved:aid}}'"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    records:
+      - Contacts:
+          totalSize: 1
+          records:
+            - LastName: "Kid-{{rand}}"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Contact/{{saved:cid}}"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:aid}}"

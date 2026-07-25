@@ -1,0 +1,40 @@
+id: hooks-003
+name: "after_insert hook creates a child record linked to its parent"
+targets: [emulator]
+# Modeled on a standard after-insert Apex
+# trigger that creates a child Contact links it to the parent via the standard
+# AccountId lookup. The emulator's create_child action does the same via
+# parentField.
+citation: "emulator declarative-hook feature — no Salesforce REST analogue"
+setup:
+  - method: POST
+    path: "/__emulator__/hooks"
+    headers: { Content-Type: "application/json" }
+    body:
+      object: "Account"
+      timing: "after_insert"
+      action:
+        type: "create_child"
+        childObject: "Contact"
+        parentField: "AccountId"
+        childFields: { LastName: "Auto {{rand}}" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Hook Parent {{rand}}" }
+    save: { accountId: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, LastName, AccountId FROM Contact WHERE LastName = 'Auto {{rand}}'"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    records:
+      - LastName: "Auto {{rand}}"
+        AccountId: "{{saved:accountId}}"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

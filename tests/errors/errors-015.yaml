@@ -1,0 +1,14 @@
+id: errors-015
+name: "Create on an unknown sObject type returns 404 NOT_FOUND"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/NotARealObject__c"
+  headers:
+    Content-Type: "application/json"
+  body:
+    Name: "Nowhere {{rand}}"
+expect:
+  status: 404
+  body:
+    - errorCode: "NOT_FOUND"

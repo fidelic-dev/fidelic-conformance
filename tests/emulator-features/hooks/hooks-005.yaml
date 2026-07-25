@@ -1,0 +1,32 @@
+id: hooks-005
+name: "before_update hook sets a field on update"
+targets: [emulator]
+citation: "emulator declarative-hook feature — before_update timing (additive to v1.0)"
+setup:
+  - method: POST
+    path: "/__emulator__/hooks"
+    headers: { Content-Type: "application/json" }
+    body:
+      object: "Account"
+      timing: "before_update"
+      condition: "Industry = 'Technology'"
+      action: { type: "set_field", field: "Rating", value: "Hot" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Before Update {{rand}}" }
+    save: { accountId: "$.id" }
+  - method: PATCH
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+    headers: { Content-Type: "application/json" }
+    body: { Industry: "Technology" }
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+expect:
+  status: 200
+  body:
+    Rating: "Hot"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

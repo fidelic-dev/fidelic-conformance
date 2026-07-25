@@ -1,0 +1,31 @@
+id: hooks-006
+name: "before_update hook rejects an update via reject action"
+targets: [emulator]
+citation: "emulator declarative-hook feature — before_update reject (additive to v1.0)"
+setup:
+  - method: POST
+    path: "/__emulator__/hooks"
+    headers: { Content-Type: "application/json" }
+    body:
+      object: "Account"
+      timing: "before_update"
+      condition: "AnnualRevenue < 0"
+      action: { type: "reject", message: "revenue must be non-negative" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Reject Update {{rand}}" }
+    save: { accountId: "$.id" }
+request:
+  method: PATCH
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+  headers: { Content-Type: "application/json" }
+  body: { AnnualRevenue: -5 }
+expect:
+  status: 400
+  body:
+    - errorCode: "FIELD_CUSTOM_VALIDATION_EXCEPTION"
+      message: "revenue must be non-negative"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

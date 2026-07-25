@@ -1,0 +1,29 @@
+id: hooks-002
+name: "before_insert hook rejects a matching insert with a real error code"
+targets: [emulator]
+citation: "emulator declarative-hook feature — no Salesforce REST analogue"
+setup:
+  - method: POST
+    path: "/__emulator__/hooks"
+    headers: { Content-Type: "application/json" }
+    body:
+      object: "Account"
+      timing: "before_insert"
+      condition: "Name = 'Blocked'"
+      action:
+        type: "reject"
+        errorCode: "FIELD_CUSTOM_VALIDATION_EXCEPTION"
+        message: "Account name is blocked"
+request:
+  method: POST
+  path: "/services/data/v62.0/sobjects/Account"
+  headers: { Content-Type: "application/json" }
+  body: { Name: "Blocked" }
+expect:
+  status: 400
+  body:
+    - errorCode: "FIELD_CUSTOM_VALIDATION_EXCEPTION"
+      message: "Account name is blocked"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

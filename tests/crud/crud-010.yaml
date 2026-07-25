@@ -1,0 +1,14 @@
+id: crud-010
+name: "sObject Basic Information for Account returns 200 with objectDescribe"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_sobject_basic_info_get.htm"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account"
+expect:
+  status: 200
+  body:
+    objectDescribe:
+      name: "Account"
+      keyPrefix: "001"
+      label: "{{match:string}}"
+    recentItems: "{{match:any}}"

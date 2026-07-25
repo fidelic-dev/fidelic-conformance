@@ -1,0 +1,22 @@
+id: crud-014
+name: "Retrieve a deleted Account returns 404 NOT_FOUND (delete lifecycle)"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers:
+      Content-Type: "application/json"
+    body:
+      Name: "Gone {{rand}}"
+    save:
+      accountId: "$.id"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+expect:
+  status: 404
+  body:
+    - errorCode: "NOT_FOUND"
+# No teardown: the record was deleted in setup.

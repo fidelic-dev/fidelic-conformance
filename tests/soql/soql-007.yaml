@@ -1,0 +1,25 @@
+id: soql-007
+name: "SOQL records carry an attributes block with type and url"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_query.htm"
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "SoqlAttrs {{rand}}" }
+    save: { accountId: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Name FROM Account WHERE Id = '{{saved:accountId}}'"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    records:
+      - attributes:
+          type: "Account"
+          url: "{{match:string}}"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"

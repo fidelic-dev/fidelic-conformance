@@ -1,0 +1,21 @@
+id: faults-003
+name: "Injected latency delays but does not break a request"
+targets: [emulator]
+citation: "emulator control feature — no Salesforce REST analogue"
+# Loose by design: timing is non-deterministic to assert, so we only verify the
+# latency knob leaves the request functional (still 200).
+setup:
+  - method: POST
+    path: "/__emulator__/faults"
+    headers: { Content-Type: "application/json" }
+    body: { latencyMs: 50 }
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Account/describe"
+expect:
+  status: 200
+  body:
+    name: "Account"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

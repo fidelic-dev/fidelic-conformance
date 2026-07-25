@@ -1,0 +1,13 @@
+id: soql-010
+name: "Malformed SOQL returns 400 MALFORMED_QUERY"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    # Missing the SELECT field list — a syntax error the parser must reject.
+    q: "SELECT FROM Account"
+expect:
+  status: 400
+  body:
+    - errorCode: "MALFORMED_QUERY"

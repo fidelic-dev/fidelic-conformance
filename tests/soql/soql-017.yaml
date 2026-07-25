@@ -1,0 +1,34 @@
+id: soql-017
+pending: true  # Provisional — docs-derived, pending real-org verification
+name: "SOQL child subquery with ZERO children returns null for the child relationship (not an empty array)"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_relationships_query_using.htm"
+# NEXT-VERSION addition (beyond the frozen 52 / current 68). SUB-FEATURE #1, ruler-first.
+# PROVENANCE — PROVISIONAL (docs-derived; UNVERIFIED against a real org).
+# CLASSIC EMULATOR LIE #2: an empty child relationship subquery comes back as `null` in
+# the REST query envelope — NOT `{"totalSize":0,"records":[]}`, and NOT an empty array
+# invented from intuition. Pinned `null` per the documented parent-to-child gotcha
+# (developers must null-check the child relationship before reading `.records`).
+# EXACT SHAPE TO VERIFY: null  vs  {totalSize:0,done:true,records:[]}. This is the one
+# assertion here most likely to be wrong without ground truth. real-org capture —
+# reconcile before non-provisional.
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Childless-{{rand}}", Site: "SoqlSubEmpty-{{rand}}" }
+    save: { aid: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, (SELECT LastName FROM Contacts) FROM Account WHERE Id = '{{saved:aid}}'"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    records:
+      - Id: "{{saved:aid}}"
+        Contacts: null
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:aid}}"

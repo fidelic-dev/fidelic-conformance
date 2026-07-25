@@ -1,0 +1,10 @@
+id: errors-006
+name: "Retrieve on an unknown sObject type returns 404 NOT_FOUND"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/NotARealObject__c/001000000000001"
+expect:
+  status: 404
+  body:
+    - errorCode: "NOT_FOUND"
