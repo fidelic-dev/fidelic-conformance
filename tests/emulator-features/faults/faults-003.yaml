@@ -1,19 +1,26 @@
 id: faults-003
-name: "Injected latency delays but does not break a request"
+name: "Injected latency actually delays the request (and does not break it)"
 targets: [emulator]
 citation: "emulator control feature — no Salesforce REST analogue"
-# Loose by design: timing is non-deterministic to assert, so we only verify the
-# latency knob leaves the request functional (still 200).
+# This fixture used to arm 50ms and assert only `status: 200`, so it passed
+# identically whether the latency knob worked or was a COMPLETE NO-OP — a ruler that
+# cannot fail. It now asserts a lower bound on elapsed time.
+#
+# The bound is deliberately GENEROUS (arm 300, assert 250): its job is to separate
+# "the delay fired" from "nothing happened", not to measure timing precisely. Only
+# the main request is timed, so setup/teardown cannot inflate it, and no upper bound
+# is asserted — a slow CI box must never turn this red.
 setup:
   - method: POST
     path: "/__emulator__/faults"
     headers: { Content-Type: "application/json" }
-    body: { latencyMs: 50 }
+    body: { latencyMs: 300 }
 request:
   method: GET
   path: "/services/data/v62.0/sobjects/Account/describe"
 expect:
   status: 200
+  elapsedMsAtLeast: 250
   body:
     name: "Account"
 teardown:

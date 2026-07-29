@@ -42,6 +42,18 @@ type Expect struct {
 	Status int  `yaml:"status"`
 	Body   any  `yaml:"body"`
 	Strict bool `yaml:"strict"`
+
+	// ElapsedMsAtLeast asserts the MAIN request took at least this long, in
+	// milliseconds. It exists for one job: making a latency-injection test able to
+	// FAIL. faults-003 armed 50ms and asserted only `status: 200`, so it passed
+	// identically whether the latency knob worked or was a complete no-op — a ruler
+	// that cannot fail certifies nothing, and quietly reports that it does.
+	//
+	// Use a GENEROUS lower bound (arm 300ms, assert 250ms). The bound must be
+	// discriminating, not tight: it needs to separate "the feature fired" from "the
+	// feature did nothing", never to measure timing precisely. Only the main request
+	// is timed — setup and teardown cannot inflate it.
+	ElapsedMsAtLeast int `yaml:"elapsedMsAtLeast"`
 }
 
 // Test is one conformance case loaded from a YAML file.
@@ -81,6 +93,9 @@ type Result struct {
 	Err     error  // transport/setup error (as opposed to an assertion failure)
 	Diffs   []Diff // assertion mismatches
 	RawBody []byte // actual main-response body, for failure diagnostics
+
+	// ElapsedMs is the wall time of the MAIN request (setup/teardown excluded).
+	ElapsedMs int64
 }
 
 // Runner executes tests against a target.
@@ -207,7 +222,9 @@ func (r *Runner) Run(ctx context.Context, t Test) Result {
 		}
 	}
 
+	startedAt := time.Now()
 	status, body, err := r.do(ctx, t.Request, sc)
+	res.ElapsedMs = time.Since(startedAt).Milliseconds()
 	if err != nil {
 		res.Err = err
 		return res
@@ -226,6 +243,12 @@ func (r *Runner) Run(ctx context.Context, t Test) Result {
 
 	if status != t.Expect.Status {
 		res.Diffs = append(res.Diffs, Diff{"$status", fmt.Sprintf("expected HTTP %d, got %d", t.Expect.Status, status)})
+	}
+
+	if t.Expect.ElapsedMsAtLeast > 0 && res.ElapsedMs < int64(t.Expect.ElapsedMsAtLeast) {
+		res.Diffs = append(res.Diffs, Diff{"$elapsedMs", fmt.Sprintf(
+			"expected the request to take at least %dms, took %dms — the injected delay did not fire",
+			t.Expect.ElapsedMsAtLeast, res.ElapsedMs)})
 	}
 
 	if t.Expect.Body != nil {
