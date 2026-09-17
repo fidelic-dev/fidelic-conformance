@@ -1,0 +1,40 @@
+id: crud-018
+pending: true  # Provisional — the expected shape below is UNVERIFIED against a real org
+name: "Describe a custom Lookup field: type is 'reference' and referenceTo names the target"
+citation: "CITE-PENDING — no documentation source captured yet; see the note below"
+requires:
+  - "a custom object with a Lookup field (org prerequisite; the stock emulator ships neither)"
+# WHY THIS EXISTS, and why it is deliberately not green.
+#
+# The emulator's normalizeType() folds Lookup and MasterDetail into "string", so a custom
+# lookup describes as a text field today. That was found while building the record seeder,
+# which had keyed its parent-chain logic on `type == "reference"` and therefore put a
+# generated STRING into a lookup field and called the record valid.
+#
+# The seeder was fixed to key on referenceTo instead. THE DESCRIBE SHAPE WAS DELIBERATELY NOT
+# CHANGED: describe output is conformance-measured, and no feature may alter the shape of a
+# conformance-measured response for its own convenience (doctrine 13). Changing it to match a
+# belief about Salesforce, with no captured evidence, would be exactly the guess this project
+# refuses to make.
+#
+# So the belief is written down HERE, as a pending fixture, where it is visible and falsifiable
+# rather than sitting in a commit message. It asserts what we currently expect a real org to
+# return. It must NOT be promoted to green on reasoning — only on one of:
+#
+#   1. a documentation citation for the field-describe shape of a Lookup, or
+#   2. a real-org capture of `/sobjects/<CustomObject>/describe` showing these keys.
+#
+# If the capture disagrees, the fixture changes to match the capture and the emulator is fixed
+# against it. If it agrees, normalizeType gains a lookup/masterdetail → reference mapping and
+# this becomes a green conformance test rather than a belief.
+request:
+  method: GET
+  path: "/services/data/v62.0/sobjects/Invoice__c/describe"
+expect:
+  status: 200
+  body:
+    fields:
+      - name: "Account__c"
+        type: "reference"
+        referenceTo:
+          - "Account"
