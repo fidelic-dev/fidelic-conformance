@@ -1,0 +1,33 @@
+id: faults-004
+name: "probability 1 fires every time — the deterministic boundary"
+targets: [emulator]
+citation: "emulator control feature — no Salesforce REST analogue"
+# BOUNDARY, not a sample. A probabilistic fault is only safe to ship if its two endpoints
+# are exact: probability 1 must fire on every matching operation, with no chance of a miss.
+# A "100%" fault that missed once would be indistinguishable from a real bug in whatever the
+# customer is testing, and they would go looking for it in their own code.
+#
+# once:false so the fault survives the first firing and the assertion is about the
+# probability gate rather than about Once.
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Always Fault {{rand}}" }
+    save: { accountId: "$.id" }
+  - method: POST
+    path: "/__emulator__/faults"
+    headers: { Content-Type: "application/json" }
+    body: { errorCode: "UNABLE_TO_LOCK_ROW", trigger: "update", probability: 1, once: false }
+request:
+  method: PATCH
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+  headers: { Content-Type: "application/json" }
+  body: { Name: "Always Fault {{rand}} (edit)" }
+expect:
+  status: 400
+  body:
+    - errorCode: "UNABLE_TO_LOCK_ROW"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

@@ -1,0 +1,34 @@
+id: faults-005
+name: "probability 0 never fires — an armed fault that is a control arm"
+targets: [emulator]
+citation: "emulator control feature — no Salesforce REST analogue"
+# THE OTHER BOUNDARY, and the one that catches the dangerous implementation mistake.
+#
+# `probability` is optional, and omitting it means DETERMINISTIC (fire every time). If the
+# field were a plain number rather than an optional one, every fault armed without a
+# probability would read as 0 and never fire — the whole feature silently disabled while every
+# arming call still returned success. So 0 must mean "never", it must be distinguishable from
+# absence, and faults-001 covers the absent case firing normally right alongside this.
+#
+# A 0-probability fault is also a legitimate thing to ask for on its own: it is the control arm
+# of an experiment, where the only variable is whether the fault can fire.
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Never Fault {{rand}}" }
+    save: { accountId: "$.id" }
+  - method: POST
+    path: "/__emulator__/faults"
+    headers: { Content-Type: "application/json" }
+    body: { errorCode: "UNABLE_TO_LOCK_ROW", trigger: "update", probability: 0, once: false }
+request:
+  method: PATCH
+  path: "/services/data/v62.0/sobjects/Account/{{saved:accountId}}"
+  headers: { Content-Type: "application/json" }
+  body: { Name: "Never Fault {{rand}} (edit)" }
+expect:
+  status: 204
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"
