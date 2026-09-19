@@ -1,0 +1,26 @@
+id: faults-006
+name: "A fault body that arms nothing is refused, and the refusal names the accepted keys"
+targets: [emulator]
+citation: "emulator control feature — no Salesforce REST analogue"
+# THE BUG THIS PINS: unknown JSON keys are dropped silently, so a caller who wrote
+# {"fault":"UNABLE_TO_LOCK_ROW"} instead of {"errorCode":...} used to get
+# 200 {"success":true} having armed NOTHING. They then ran the operation, watched it
+# succeed, and concluded their retry path was covered. The arming response was the only
+# feedback available and it said yes.
+#
+# The assertion is deliberately on the MESSAGE CONTENT, not just the 400. A refusal that
+# does not name `errorCode` and `latencyMs` leaves the caller exactly as stuck as the
+# silent success did — they know the body is wrong but not which key they wanted.
+request:
+  method: POST
+  path: "/__emulator__/faults"
+  headers: { Content-Type: "application/json" }
+  body: { fault: "UNABLE_TO_LOCK_ROW", trigger: "update" }
+expect:
+  status: 400
+  body:
+    success: false
+    error: "{{match:regex:arms nothing.*errorCode.*latencyMs}}"
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"

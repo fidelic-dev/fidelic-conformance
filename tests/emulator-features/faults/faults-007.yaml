@@ -1,0 +1,23 @@
+id: faults-007
+name: "latencyMs on its own is a legal arm and is accepted"
+targets: [emulator]
+citation: "emulator control feature — no Salesforce REST analogue"
+# THE GUARD ON faults-006's FIX. Refusing bodies that "arm nothing" must not sweep up the
+# latency-only body, which arms something real and is the documented way to inject latency.
+#
+# faults-003 already arms latencyMs and asserts the delay fires, but it does so in SETUP,
+# where the arming response is never inspected — so an over-broad refusal would turn
+# faults-003 red for a reason its name does not describe. This fixture asserts the
+# acceptance contract directly, so the failure lands where the cause is.
+request:
+  method: POST
+  path: "/__emulator__/faults"
+  headers: { Content-Type: "application/json" }
+  body: { latencyMs: 300 }
+expect:
+  status: 200
+  body:
+    success: true
+teardown:
+  - method: POST
+    path: "/__emulator__/reset"
