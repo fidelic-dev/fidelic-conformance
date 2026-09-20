@@ -1,0 +1,36 @@
+id: soql-018
+name: "SOQL LIKE matches % and _ wildcards, case-insensitively"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_comparisonoperators.htm"
+# Docs-derived from the SOQL comparison-operators reference: LIKE "performs a
+# fuzzy match", % matches any number of characters, _ matches exactly one, and
+# the operator is case-insensitive. Pending real-org verification.
+#
+# The lower-cased pattern is the point: an implementation that forgot the fold
+# would still pass a test written with matching case.
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Acme Widgets {{rand}}", Site: "SoqlLike-{{rand}}" }
+    save: { id1: "$.id" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "Globex {{rand}}", Site: "SoqlLike-{{rand}}" }
+    save: { id2: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Name FROM Account WHERE Site = 'SoqlLike-{{rand}}' AND Name LIKE 'acme%'"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    records:
+      - Name: "Acme Widgets {{rand}}"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id1}}"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id2}}"

@@ -1,0 +1,16 @@
+id: soql-unsupported-002
+name: "FOR UPDATE is refused by name"
+targets: [emulator]
+citation: "emulator limit — no Salesforce analogue; a real org locks the rows"
+# There is no row locking to take, so answering this query would be answering a
+# different question than the one asked.
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id FROM Account FOR UPDATE"
+expect:
+  status: 400
+  body:
+    - errorCode: "UNSUPPORTED_SOQL"
+      message: "{{match:regex:FOR UPDATE}}"

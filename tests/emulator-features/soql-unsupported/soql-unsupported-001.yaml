@@ -1,0 +1,17 @@
+id: soql-unsupported-001
+name: "An aggregate query is refused by name, not reported as malformed"
+targets: [emulator]
+citation: "emulator limit — no Salesforce analogue; a real org answers this query"
+# A REAL ORG ANSWERS THIS. The test asserts our refusal is honest about being ours:
+# the caller's SOQL is correct, so the error must name the clause we decline rather
+# than claim their syntax is wrong.
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT COUNT() FROM Account"
+expect:
+  status: 400
+  body:
+    - errorCode: "UNSUPPORTED_SOQL"
+      message: "{{match:regex:COUNT\\(\\)}}"

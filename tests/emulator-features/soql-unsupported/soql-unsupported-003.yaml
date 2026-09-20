@@ -1,0 +1,16 @@
+id: soql-unsupported-003
+name: "A genuinely malformed query is still MALFORMED_QUERY"
+targets: [emulator]
+citation: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm"
+# THE OTHER HALF. Naming unsupported clauses must not turn every parse failure into
+# UNSUPPORTED_SOQL — real syntax errors keep the code a real org returns, or the new
+# code becomes a catch-all that tells the caller nothing.
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT FROM WHERE"
+expect:
+  status: 400
+  body:
+    - errorCode: "MALFORMED_QUERY"

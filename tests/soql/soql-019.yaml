@@ -1,0 +1,43 @@
+id: soql-019
+name: "SOQL OFFSET skips rows after ORDER BY and before LIMIT"
+citation: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_offset.htm"
+# Docs-derived from the SOQL OFFSET reference. Pending real-org verification.
+#
+# THE ORDER OF THE THREE CLAUSES IS THE ASSERTION. `LIMIT 1 OFFSET 1` over three
+# ordered rows is the SECOND row. An implementation that applied LIMIT first and
+# then skipped would return nothing, and one that ignored OFFSET would return the
+# first row — so both wrong answers are distinguishable from the right one here.
+setup:
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "AAA-{{rand}}", Site: "SoqlOffset-{{rand}}" }
+    save: { id1: "$.id" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "BBB-{{rand}}", Site: "SoqlOffset-{{rand}}" }
+    save: { id2: "$.id" }
+  - method: POST
+    path: "/services/data/v62.0/sobjects/Account"
+    headers: { Content-Type: "application/json" }
+    body: { Name: "CCC-{{rand}}", Site: "SoqlOffset-{{rand}}" }
+    save: { id3: "$.id" }
+request:
+  method: GET
+  path: "/services/data/v62.0/query"
+  query:
+    q: "SELECT Id, Name FROM Account WHERE Site = 'SoqlOffset-{{rand}}' ORDER BY Name ASC LIMIT 1 OFFSET 1"
+expect:
+  status: 200
+  body:
+    totalSize: 1
+    records:
+      - Name: "BBB-{{rand}}"
+teardown:
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id1}}"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id2}}"
+  - method: DELETE
+    path: "/services/data/v62.0/sobjects/Account/{{saved:id3}}"
